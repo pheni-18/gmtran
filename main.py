@@ -1,9 +1,33 @@
-def print_hi(name):
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+import sys
+import google.auth
+from google.cloud import translate
 
 
-# Press the green button in the gutter to run the script.
+def main():
+    args = sys.argv
+
+    source, target = args[1].split('2')
+    lang_map = {
+        'ja': 'Japanese',
+        'en': 'English',
+    }
+    text = args[2:]
+
+    _, PROJECT_ID = google.auth.default()
+    TRANSLATE = translate.TranslationServiceClient()
+    PARENT = 'projects/{}'.format(PROJECT_ID)
+    SOURCE, TARGET = (source, lang_map[source]), (target, lang_map[target])
+    data = {
+        'contents': text,
+        'parent': PARENT,
+        'target_language_code': TARGET[0],
+    }
+
+    rsp = TRANSLATE.translate_text(**data)
+    translated = rsp.translations[0].translated_text
+
+    print(translated)
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main()
