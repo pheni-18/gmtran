@@ -1,7 +1,8 @@
-from google.cloud import translate
+from google.cloud import translate as gcp_translate
 
 import argparse
 import google.auth
+import inspect
 import os
 import sys
 
@@ -9,19 +10,24 @@ LANG_LIST = {'ja', 'en'}
 GCP_CRED_KEY = 'GOOGLE_APPLICATION_CREDENTIALS'
 
 
-def main():
+class CredNothingError(Exception):
+    def __init__(self):
+        self.message = inspect.cleandoc(f'''ERROR!!!
+        Please set environment {GCP_CRED_KEY}.
+        ex.) export {GCP_CRED_KEY}="your_credentials_key_place.json"
+        ''')
+
+
+def translate(args):
     gcp_cred = os.getenv(GCP_CRED_KEY)
     if gcp_cred is None:
-        print('ERROR!!!')
-        print(f'Please set environment {GCP_CRED_KEY}.')
-        print(f'ex.) export {GCP_CRED_KEY}="your_credentials_key_place.json"')
-        sys.exit(1)
+        raise CredNothingError()
 
     parser = argparse.ArgumentParser(description='translator')
 
     parser.add_argument('target', help='target ex.) ja', choices=LANG_LIST)
     parser.add_argument('texts', nargs='+', help='text ex.) hello')
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     _, project_id = google.auth.default()
     text = ' '.join(args.texts)
@@ -31,11 +37,18 @@ def main():
         'target_language_code': args.target,
     }
 
-    translate_client = translate.TranslationServiceClient()
+    translate_client = gcp_translate.TranslationServiceClient()
     rsp = translate_client.translate_text(**data)
-    translated = rsp.translations[0].translated_text
 
-    print(translated)
+    return rsp.translations[0].translated_text
+
+
+def main():
+    try:
+        translated = translate(sys.argv[1:])
+        print(translated)
+    except CredNothingError as e:
+        print(e.message)
 
 
 if __name__ == '__main__':
