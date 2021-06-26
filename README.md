@@ -1,13 +1,19 @@
 # gmtran
 
-Japanese → English
+## Usage
+### Build
 ```shell
-$ gmtran.py ja2en こんにちは
+$ pip install -e .
+```
+
+### Japanese → English
+```shell
+$ gmtran en こんにちは
 hello
 ```
 
-English → Japanese
+### English → Japanese
 ```shell
-$ gmtrany en2ja hello
+$ gmtran ja hello
 こんにちは
 ```
