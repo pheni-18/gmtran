@@ -48,7 +48,8 @@ def main():
         translated = translate(sys.argv[1:])
         print(translated)
     except CredNothingError as e:
-        print(e.message)
+        print(e.message, file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
